@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+
+  app:
+    env_file:
+      - env/.env_file
+    build:
+      context: .
+      dockerfile: ./app/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+       - ./test_photos:/app/photos
+    command: python3 app/server.py
