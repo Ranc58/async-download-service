@@ -9,23 +9,19 @@ import aiofiles
 from config import CONFIG
 
 
-async def get_archive_part(data_path):
-    chunk_archive = await asyncio.create_subprocess_shell(
-        f'zip -r - {CONFIG["photos_path"]}/{data_path}/| base64 | base64 -d',
+async def get_archive_process(data_path):
+    archive_process = await asyncio.create_subprocess_shell(
+        f'zip -r - {CONFIG["photos_path"]}/{data_path}/',
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE
     )
-    return chunk_archive
-
-
-async def check_data_path_exist(data_path):
-    return os.path.exists(f'{CONFIG["photos_path"]}/{data_path}')
+    return archive_process
 
 
 async def archive_handle(request):
     response = web.StreamResponse()
     archive_hash = request.match_info.get('archive_hash')
-    is_path_exist = await check_data_path_exist(archive_hash)
+    is_path_exist = os.path.exists(f'{CONFIG["photos_path"]}/{archive_hash}')
     if not is_path_exist:
         return web.Response(
             text='Архив не существует или был удален',
@@ -35,21 +31,21 @@ async def archive_handle(request):
 
     await response.prepare(request)
 
-    chunk_archive = await get_archive_part(archive_hash)
+    archive_process = await get_archive_process(archive_hash)
 
     try:
         while True:
-            stdout = await chunk_archive.stdout.readline()
+            chunk_archive = await archive_process.stdout.readline()
             logging.debug('Sending archive chunk ...')
-            if not stdout:
+            if not chunk_archive:
                 break
-            await response.write(stdout)
+            await response.write(chunk_archive)
             await asyncio.sleep(CONFIG['response_timeout'])
     except asyncio.CancelledError:
-        chunk_archive.kill()
-        response.force_close()
+        archive_process.kill()
         raise
-    await response.write_eof()
+    finally:
+        response.force_close()
     return response
 
 
