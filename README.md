@@ -19,6 +19,7 @@
       - 2.jpg
 ```
 ## Как запустить с помощью Docker
+
 1) `cp env/.env env/.env_file`
 2) задайте настройки в `env/.env_file`: 
    - `LOGGING=1` если необходимо логгирование.
@@ -28,7 +29,7 @@
    По умолчанию фотографии беруться из директории `test_photos` в корне проекта.
    Если необходимо поменять - измените в `docker-compose.yml` в разделе `volumes` `- ./test_photos:/app/photos` 
    на `- <ПОЛНЫЙ ПУТЬ ДО ВАШИХ ФОТО>:/app/photos`.
-3) `docker-compose up --build`
+3) Для локальной разработки можно  использовать `docker-compose -f docker-compose.dev.yml build` и потом использовать `docker-compose -f docker-compose.dev.yml up` (Папка с приложением будет примоитнрована и можно не собирать каждый раз заново образ.). В остальных случаях `docker-compose up --build`
 ## Как установить
 
 Для работы микросервиса нужен Python версии не ниже 3.6.
