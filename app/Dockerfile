@@ -11,13 +11,14 @@ ENV PYTHONFAULTHANDLER=1 \
 
 
 RUN apk update \
-    && apk upgrade && apk add \
-      bash \
-      zip
+    && apk upgrade && apk add bash zip && rm -vrf /var/cache/apk/*
 
 
 RUN mkdir /app
-COPY . /app
+COPY app/requirements.txt /app/requirements.txt
+
 WORKDIR /app
 
-RUN pip3 install -r app/requirements.txt
+RUN pip3 install -r requirements.txt
+
+COPY . /app
